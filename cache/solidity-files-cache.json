@@ -1,0 +1,40 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "/Users/dishankchauhan/Desktop/cursor ai/Crypto-Nex/project/contracts/PaymentContract.sol": {
+      "lastModificationDate": 1738058107036,
+      "contentHash": "e884b53c5507adc23f8091287c28aca6",
+      "sourceName": "contracts/PaymentContract.sol",
+      "solcConfig": {
+        "version": "0.8.19",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "PaymentContract"
+      ]
+    }
+  }
+}

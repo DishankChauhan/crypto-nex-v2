@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --neon-blue: #00f3ff;
+  --neon-pink: #ff00ff;
+  --cyber-dark: #0a0a1f;
+  --cyber-darker: #050510;
+}
+
+body {
+  background-color: var(--cyber-darker);
+  color: #ffffff;
+  font-family: 'Inter', sans-serif;
+}
+
+.cyber-gradient {
+  background: linear-gradient(135deg, var(--neon-blue) 0%, var(--neon-pink) 100%);
+}
+
+.cyber-border {
+  position: relative;
+  border: 1px solid var(--neon-blue);
+  box-shadow: 0 0 10px var(--neon-blue);
+}
+
+.cyber-button {
+  background: var(--cyber-dark);
+  border: 1px solid var(--neon-blue);
+  color: var(--neon-blue);
+  text-shadow: 0 0 5px var(--neon-blue);
+  box-shadow: 0 0 10px var(--neon-blue);
+  transition: all 0.3s ease;
+}
+
+.cyber-button:hover {
+  background: var(--neon-blue);
+  color: var(--cyber-dark);
+  text-shadow: none;
+}
+
+.cyber-text {
+  color: var(--neon-blue);
+  text-shadow: 0 0 5px var(--neon-blue);
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
