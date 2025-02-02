@@ -48,12 +48,12 @@ export function PaymentForm({ provider, signer }: PaymentFormProps) {
       // Wait for confirmation
       const receipt = await tx.wait();
 
-      // Store transaction in Firebase
+      // Store transaction in Firebase with correct amount format
       const userAddress = await signer.getAddress();
       await addDoc(collection(db, 'transactions'), {
         from: userAddress.toLowerCase(),
         to: recipient.toLowerCase(),
-        amount: amount,
+        amount: parsedAmount.toString(), // Store as string to preserve precision
         timestamp: Date.now(),
         status: 'completed',
         txHash: receipt.transactionHash,

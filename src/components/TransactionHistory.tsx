@@ -38,7 +38,7 @@ export function TransactionHistory({ provider }: TransactionHistoryProps) {
         
         const q = query(
           collection(db, 'transactions'),
-          where('from', '==', address.toLowerCase()),
+          where('userId', '==', user.uid),
           orderBy('timestamp', 'desc')
         );
 
@@ -93,16 +93,20 @@ export function TransactionHistory({ provider }: TransactionHistoryProps) {
       <h3 className="text-xl text-[#00f3ff] font-semibold mb-4">Transaction History</h3>
       
       {transactions.length === 0 ? (
-        <p className="text-gray-400">No transactions yet</p>
+        <div className="text-center py-8">
+          <Clock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+          <p className="text-gray-400">No transactions yet</p>
+          <p className="text-sm text-gray-500 mt-2">Your transaction history will appear here</p>
+        </div>
       ) : (
         <div className="space-y-4">
           {transactions.map((tx) => (
-            <div key={tx.id} className="border border-[#00f3ff]/20 rounded-lg p-4">
+            <div key={tx.id} className="border border-[#00f3ff]/20 rounded-lg p-4 hover:bg-[#0a0a1f]/50 transition-colors">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   {getStatusIcon(tx.status)}
                   <span className="text-[#00f3ff]">
-                    {ethers.utils.formatEther(tx.amount)} ETH
+                    {ethers.utils.formatEther(tx.amount)} SepoliaETH
                   </span>
                 </div>
                 {tx.hash && (

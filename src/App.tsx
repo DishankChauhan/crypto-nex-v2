@@ -1,8 +1,9 @@
 import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import { signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
 import { auth } from './lib/firebase';
-import { LogIn, LogOut, Cpu, ChevronRight, Wallet } from 'lucide-react';
+import { LogIn, LogOut, Cpu, ChevronRight, Wallet, LineChart, Newspaper } from 'lucide-react';
 import { Web3Wallet } from './components/Web3Wallet';
 import { CryptoPriceTracker } from './components/CryptoPriceTracker';
 import { HeroSection } from './components/HeroSection';
@@ -11,11 +12,13 @@ import { PaymentForm } from './components/PaymentForm';
 import { BatchPaymentForm } from './components/Payments/BatchPaymentForm';
 import { TransactionHistory } from './components/TransactionHistory';
 import { TransactionDashboard } from './components/Analytics/TransactionDashboard';
+import { Charts } from './pages/Charts';
+import { News } from './pages/News';
 import { ethers } from 'ethers';
 
 declare global {
   interface Window {
-    ethereum: any;
+    ethereum: ethers.providers.ExternalProvider;
   }
 }
 
@@ -58,7 +61,25 @@ function AppContent() {
               <Cpu className="h-6 w-6 text-[#00f3ff]" />
               <h1 className="text-xl font-bold cyber-text">CryptoNex</h1>
             </div>
-            <div className="flex items-center">
+            <div className="flex items-center space-x-4">
+              {user && (
+                <>
+                  <Link
+                    to="/charts"
+                    className="text-[#00f3ff] hover:text-[#00f3ff]/80 flex items-center gap-2"
+                  >
+                    <LineChart className="h-5 w-5" />
+                    Charts
+                  </Link>
+                  <Link
+                    to="/news"
+                    className="text-[#00f3ff] hover:text-[#00f3ff]/80 flex items-center gap-2"
+                  >
+                    <Newspaper className="h-5 w-5" />
+                    News
+                  </Link>
+                </>
+              )}
               {user ? (
                 <div className="flex items-center space-x-4">
                   <div className="cyber-border rounded-full p-0.5">
@@ -94,36 +115,38 @@ function AppContent() {
 
       <CryptoPriceTracker />
 
-      {!user ? (
-        <HeroSection />
-      ) : (
-        <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Wallet and Payment Section */}
+      <Routes>
+        <Route path="/charts" element={<Charts />} />
+        <Route path="/news" element={<News />} />
+        <Route path="/" element={
+          !user ? (
+            <HeroSection />
+          ) : (
+            <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
               <div className="space-y-6">
-                <Web3Wallet provider={provider} signer={signer} />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-6">
+                    <Web3Wallet provider={provider} signer={signer} />
+                    {provider && signer && (
+                      <PaymentForm provider={provider} signer={signer} />
+                    )}
+                  </div>
+
+                  <div className="space-y-6">
+                    <TransactionHistory provider={provider} />
+                  </div>
+                </div>
+
                 {provider && signer && (
-                  <PaymentForm provider={provider} signer={signer} />
+                  <BatchPaymentForm provider={provider} signer={signer} />
                 )}
+
+                <TransactionDashboard />
               </div>
-
-              {/* Transaction History */}
-              <div className="space-y-6">
-                <TransactionHistory provider={provider} />
-              </div>
-            </div>
-
-            {/* Batch Payments */}
-            {provider && signer && (
-              <BatchPaymentForm provider={provider} signer={signer} />
-            )}
-
-            {/* Analytics Dashboard */}
-            <TransactionDashboard />
-          </div>
-        </main>
-      )}
+            </main>
+          )
+        } />
+      </Routes>
 
       <Footer />
     </div>
@@ -131,7 +154,11 @@ function AppContent() {
 }
 
 function App() {
-  return <AppContent />;
+  return (
+    <Router>
+      <AppContent />
+    </Router>
+  );
 }
 
 export default App;
