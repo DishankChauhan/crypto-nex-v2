@@ -15,13 +15,11 @@ export function CryptoPriceTracker() {
   useEffect(() => {
     const fetchPrices = async () => {
       try {
-        // Using CoinGecko API v3 with proper headers
         const response = await fetch(
           'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,ripple,cardano,solana&vs_currencies=usd&include_24hr_change=true',
           {
             headers: {
-              'Accept': 'application/json',
-              'Content-Type': 'application/json'
+              'Accept': 'application/json'
             }
           }
         );
@@ -32,31 +30,27 @@ export function CryptoPriceTracker() {
         
         const data = await response.json();
         
-        if (!data || Object.keys(data).length === 0) {
-          throw new Error('No data received from API');
-        }
-
         const formattedPrices: CryptoPrice[] = Object.entries(data).map(([id, details]: [string, any]) => ({
           id,
           symbol: id.substring(0, 3).toUpperCase(),
-          price: details.usd,
-          change24h: details.usd_24h_change
+          price: details.usd || 0,
+          change24h: details.usd_24h_change || 0
         }));
         
         setPrices(formattedPrices);
       } catch (error) {
         console.error('Error fetching crypto prices:', error);
-        // Set some default prices if API fails
+        // Set default prices if API fails
         setPrices([
-          { id: 'bitcoin', symbol: 'BTC', price: 40000, change24h: 0.5 },
-          { id: 'ethereum', symbol: 'ETH', price: 2200, change24h: 1.2 },
-          { id: 'ripple', symbol: 'XRP', price: 0.5, change24h: -0.3 },
+          { id: 'bitcoin', symbol: 'BTC', price: 40000, change24h: 0 },
+          { id: 'ethereum', symbol: 'ETH', price: 2200, change24h: 0 },
+          { id: 'ripple', symbol: 'XRP', price: 0.5, change24h: 0 },
         ]);
       }
     };
 
     fetchPrices();
-    const interval = setInterval(fetchPrices, 30000);
+    const interval = setInterval(fetchPrices, 60000); // Update every minute
     return () => clearInterval(interval);
   }, []);
 
@@ -68,7 +62,7 @@ export function CryptoPriceTracker() {
       });
     };
     
-    const intervalId = setInterval(animate, 50); // Smoother animation
+    const intervalId = setInterval(animate, 50);
     return () => clearInterval(intervalId);
   }, []);
 
