@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link as LinkIcon, Copy, QrCode } from 'lucide-react';
 import { ethers } from 'ethers';
 import QRCode from 'qrcode.react';
 
 interface PaymentLinkGeneratorProps {
-  userAddress: string;
+  userAddress: string | Promise<string>;
 }
 
 export function PaymentLinkGenerator({ userAddress }: PaymentLinkGeneratorProps) {
@@ -12,11 +12,29 @@ export function PaymentLinkGenerator({ userAddress }: PaymentLinkGeneratorProps)
   const [description, setDescription] = useState('');
   const [showQR, setShowQR] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [address, setAddress] = useState('');
+
+  useEffect(() => {
+    // Resolve the promise to get the actual address
+    const resolveAddress = async () => {
+      if (typeof userAddress === 'string') {
+        setAddress(userAddress);
+      } else if (userAddress && typeof userAddress.then === 'function') {
+        const resolvedAddress = await userAddress;
+        setAddress(resolvedAddress);
+      }
+    };
+    resolveAddress();
+  }, [userAddress]);
 
   const generatePaymentLink = () => {
-    const baseUrl = window.location.origin;
+    // Use the actual domain in production
+    const baseUrl = import.meta.env.PROD 
+      ? 'https://crypto-nex-v2.netlify.app/' // Replace with your actual domain
+      : window.location.origin;
+    
     const params = new URLSearchParams({
-      to: userAddress,
+      to: address,
       amount: ethers.utils.parseEther(amount || '0').toString(),
       description: description
     });
@@ -65,7 +83,7 @@ export function PaymentLinkGenerator({ userAddress }: PaymentLinkGeneratorProps)
           />
         </div>
 
-        {amount && (
+        {amount && address && (
           <div className="space-y-4">
             <div className="flex items-center justify-between p-3 bg-[#0a0a1f] border border-[#00f3ff] rounded-md">
               <span className="text-sm text-gray-400 break-all">

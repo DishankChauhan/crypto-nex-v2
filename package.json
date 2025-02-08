@@ -10,6 +10,8 @@
     "deploy": "hardhat run scripts/deploy.js --network sepolia"
   },
   "dependencies": {
+    "@sentry/react": "^7.40.0",
+    "@sentry/tracing": "^7.40.0",
     "firebase": "^10.8.0",
     "lucide-react": "^0.344.0",
     "react": "^18.3.1",
@@ -18,7 +20,8 @@
     "ethers": "^5.7.2",
     "react-router-dom": "^6.22.3",
     "recharts": "^2.12.2",
-    "qrcode.react": "^3.1.0"
+    "qrcode.react": "^3.1.0",
+    "@supabase/supabase-js": "^2.39.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",
