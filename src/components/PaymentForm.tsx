@@ -8,11 +8,12 @@ import { collection, addDoc } from 'firebase/firestore';
 import { useSearchParams } from 'react-router-dom';
 
 interface PaymentFormProps {
-  provider: ethers.providers.Web3Provider | null;
-  signer: ethers.Signer | null;
+  provider: ethers.providers.Web3Provider;
+  signer: ethers.Signer;
+  onSuccess?: (txHash: string) => void;
 }
 
-export function PaymentForm({ provider, signer }: PaymentFormProps) {
+export function PaymentForm({ provider, signer, onSuccess }: PaymentFormProps) {
   const [searchParams] = useSearchParams();
   const [amount, setAmount] = useState('');
   const [recipient, setRecipient] = useState('');
@@ -21,21 +22,29 @@ export function PaymentForm({ provider, signer }: PaymentFormProps) {
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
 
-  // Handle payment link parameters
   useEffect(() => {
-    const linkAmount = searchParams.get('amount');
-    const linkRecipient = searchParams.get('to');
-    const linkDescription = searchParams.get('description');
+    const loadPaymentDetails = async () => {
+      try {
+        const linkRecipient = searchParams.get('to');
+        const linkAmount = searchParams.get('amount');
+        const linkDescription = searchParams.get('description');
 
-    if (linkAmount) {
-      setAmount(ethers.utils.formatEther(linkAmount));
-    }
-    if (linkRecipient) {
-      setRecipient(linkRecipient);
-    }
-    if (linkDescription) {
-      setDescription(linkDescription);
-    }
+        if (linkAmount) {
+          setAmount(ethers.utils.formatEther(linkAmount));
+        }
+        if (linkRecipient) {
+          setRecipient(linkRecipient);
+        }
+        if (linkDescription) {
+          setDescription(linkDescription);
+        }
+      } catch (error) {
+        console.error('Error loading payment details:', error);
+        setError('Invalid payment link parameters');
+      }
+    };
+
+    loadPaymentDetails();
   }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -78,8 +87,20 @@ export function PaymentForm({ provider, signer }: PaymentFormProps) {
         timestamp: Date.now(),
         status: 'completed',
         txHash: receipt.transactionHash,
-        userId: user.uid
+        userId: user.uid,
+        userEmail: user.email,
+        userName: user.displayName,
+        merchantData: {
+          redirectUrl: searchParams.get('redirect_url'),
+          merchantId: searchParams.get('merchant_id'),
+          orderId: searchParams.get('order_id')
+        }
       });
+
+      // Call onSuccess callback with transaction hash
+      if (onSuccess) {
+        onSuccess(receipt.transactionHash);
+      }
 
       // Clear form
       setAmount('');
@@ -92,63 +113,42 @@ export function PaymentForm({ provider, signer }: PaymentFormProps) {
     }
   };
 
-  const isPaymentLink = searchParams.has('to') && searchParams.has('amount');
-
   return (
-    <div className="cyber-border bg-[#0a0a1f]/80 p-6 rounded-lg">
-      {isPaymentLink ? (
-        <h3 className="text-xl text-[#00f3ff] font-semibold mb-4">Complete Payment</h3>
-      ) : (
-        <h3 className="text-xl text-[#00f3ff] font-semibold mb-4">Send Payment</h3>
-      )}
-      
+    <div className="space-y-4">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="recipient" className="block text-sm font-medium text-gray-400 mb-1">
+          <label className="block text-sm font-medium text-gray-400 mb-1">
             Recipient Address
           </label>
           <input
             type="text"
-            id="recipient"
             value={recipient}
-            onChange={(e) => setRecipient(e.target.value)}
-            className="w-full bg-[#0a0a1f] border border-[#00f3ff] rounded-md px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#00f3ff]"
-            placeholder="0x..."
-            required
-            readOnly={isPaymentLink}
+            readOnly
+            className="w-full bg-[#0a0a1f] border border-[#00f3ff] rounded-md px-3 py-2 text-white"
           />
         </div>
 
         <div>
-          <label htmlFor="amount" className="block text-sm font-medium text-gray-400 mb-1">
+          <label className="block text-sm font-medium text-gray-400 mb-1">
             Amount (ETH)
           </label>
           <input
-            type="number"
-            id="amount"
+            type="text"
             value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            step="0.0001"
-            min="0"
-            className="w-full bg-[#0a0a1f] border border-[#00f3ff] rounded-md px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#00f3ff]"
-            placeholder="0.0"
-            required
-            readOnly={isPaymentLink}
+            readOnly
+            className="w-full bg-[#0a0a1f] border border-[#00f3ff] rounded-md px-3 py-2 text-white"
           />
         </div>
 
         <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-400 mb-1">
+          <label className="block text-sm font-medium text-gray-400 mb-1">
             Description
           </label>
           <input
             type="text"
-            id="description"
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="w-full bg-[#0a0a1f] border border-[#00f3ff] rounded-md px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#00f3ff]"
-            placeholder="Payment description..."
-            readOnly={isPaymentLink}
+            readOnly
+            className="w-full bg-[#0a0a1f] border border-[#00f3ff] rounded-md px-3 py-2 text-white"
           />
         </div>
 
@@ -165,9 +165,14 @@ export function PaymentForm({ provider, signer }: PaymentFormProps) {
           className="cyber-button w-full px-4 py-2 rounded-md flex items-center justify-center space-x-2"
         >
           <Send className="h-4 w-4" />
-          <span>{loading ? 'Processing...' : isPaymentLink ? 'Complete Payment' : 'Send Payment'}</span>
+          <span>{loading ? 'Processing...' : 'Send Payment'}</span>
         </button>
       </form>
+
+      <div className="text-sm text-gray-400">
+        <p>* Transaction will be processed on the Sepolia network</p>
+        <p>* You will be redirected back after successful payment</p>
+      </div>
     </div>
   );
 }
