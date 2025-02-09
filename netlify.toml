@@ -14,4 +14,24 @@
     X-XSS-Protection = "1; mode=block"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
-    Content-Security-Policy = "default-src 'self' https://api.coingecko.com https://min-api.cryptocompare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.coingecko.com https://min-api.cryptocompare.com https://*.supabase.co wss://*.supabase.co"
+    Content-Security-Policy = """
+      default-src 'self' https://*.firebaseapp.com https://*.googleapis.com;
+      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.firebaseapp.com https://*.googleapis.com https://apis.google.com;
+      style-src 'self' 'unsafe-inline';
+      img-src 'self' data: https: blob:;
+      font-src 'self';
+      connect-src 'self' 
+        https://api.coingecko.com 
+        https://min-api.cryptocompare.com 
+        https://*.supabase.co 
+        wss://*.supabase.co 
+        https://*.firebaseio.com 
+        https://*.googleapis.com 
+        https://identitytoolkit.googleapis.com;
+      frame-src 'self' https://*.firebaseapp.com https://apis.google.com;
+      media-src 'self';
+      object-src 'none';
+      base-uri 'self';
+      form-action 'self';
+      frame-ancestors 'none';
+      upgrade-insecure-requests;"""
